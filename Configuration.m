@@ -173,6 +173,17 @@
 	}
 }
 
+//Accessors for ssl variable
+- (NSInteger) ssl {
+    return ssl;
+}
+
+- (void) setSsl:(NSInteger)newSsl {
+    if (ssl != newSsl) {
+        ssl = newSsl;
+    }
+}
+
 //Accessors for startup variable
 - (NSInteger) startup {
 	return startup;

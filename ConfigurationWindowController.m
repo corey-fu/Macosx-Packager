@@ -52,6 +52,7 @@
 	[userDebugMode setState:1];
 	[userDownload setState:1];
 	[userLazy setState:0];
+    [userSsl setState:0];
 	[userStartup setState:1];
 	[userNow setState:0];
 	
@@ -173,6 +174,7 @@
 	[configuration setDebugmode:[userDebugMode state]];
 	[configuration setDownload:[userDownload state]];
 	[configuration setLazy:[userLazy state]];
+    [configuration setSsl:[userSsl state]];
 	[configuration setPeriodicity:[userPeriodicity stringValue]];
 	[configuration setStartup:[userStartup state]];
 	[configuration setNow:[userNow state]]; 

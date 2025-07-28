@@ -33,6 +33,7 @@
 	IBOutlet NSButton *userDebugMode;
 	IBOutlet NSButton *userDownload;
 	IBOutlet NSButton *userLazy;
+    IBOutlet NSButton *userSsl;
 	IBOutlet NSTextField *userPeriodicity;
 	IBOutlet NSButton *userStartup;
 	IBOutlet NSButton *userNow;

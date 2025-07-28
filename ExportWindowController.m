@@ -146,7 +146,7 @@
         //Adding server value to the mutable string
         [ocsAgentCfgContent appendString:[configuration protocol]];
         [ocsAgentCfgContent appendString:[configuration server]];
-        [ocsAgentCfgContent appendString:@"/ocsinventory"];
+        [ocsAgentCfgContent appendString:@"\n"];
         [ocsAgentCfgContent appendString:@"\n"];
     }
     
@@ -172,6 +172,12 @@
         [ocsAgentCfgContent appendString:@"lazy=1\n"];
     } else {
         [ocsAgentCfgContent appendString:@"lazy=0\n"];
+    }
+    
+    if ([configuration ssl]) {
+        [ocsAgentCfgContent appendString:@"ssl=1\n"];
+    } else {
+        [ocsAgentCfgContent appendString:@"ssl=0\n"];
     }
     
     if ([configuration authUser]) {

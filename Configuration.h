@@ -37,6 +37,7 @@
     NSInteger debugmode;
     NSInteger download;
     NSInteger lazy;
+    NSInteger ssl;
     NSInteger startup;
     NSInteger now;
     
@@ -83,6 +84,9 @@
 
 - (NSInteger) lazy;
 - (void) setLazy:(NSInteger)newLazy;
+
+- (NSInteger) ssl;
+- (void) setSsl:(NSInteger)newSsl;
 
 - (NSInteger) startup;
 - (void) setStartup:(NSInteger)newStartup;
