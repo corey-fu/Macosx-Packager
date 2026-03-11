@@ -142,6 +142,7 @@
     }
     
     //We copy preinstall and preupgrade scripts
+    // Both preinstall and preupgrade use the same source script file
     NSString *preinstallPath = [NSString stringWithFormat:@"%@/preinstall",[[NSBundle mainBundle] resourcePath]];
     
     if ([filemgr fileExistsAtPath:preinstallPath]) {
@@ -291,6 +292,7 @@
         
         serverDir = [NSString stringWithFormat:@"/var/lib/ocsinventory-agent/%@__%@_ocsinventory", protocolName, [configuration server]];
         NSError *serverDirWriteError = nil;
+        // serverdir is informational; a write failure is non-fatal — the agent can still run without it
         [serverDir writeToFile:ocsPkgServerdirFilePath atomically: YES encoding:NSUTF8StringEncoding error:&serverDirWriteError];
         if (serverDirWriteError) {
             NSLog(@"Warning: could not write serverdir file at %@: %@", ocsPkgServerdirFilePath, [serverDirWriteError localizedDescription]);
