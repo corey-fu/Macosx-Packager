@@ -23,4 +23,8 @@
 	return YES;
 }
 
+- (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app {
+    return YES;
+}
+
 @end

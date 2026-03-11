@@ -105,3 +105,15 @@
 
 //Warning about invalid export file name comment
 "Invalid_export_file_name_comment" = "Please enter a valid file name";
+
+//Warning about no write permission on export directory
+"No_write_permission_warn" = "No write permission on export directory";
+
+//Warning about no write permission on export directory comment
+"No_write_permission_warn_comment" = "Cannot write to: %@\nPlease choose a directory you have write access to";
+
+//Warning about source OCS package not found
+"Source_pkg_not_found_warn" = "Source OCS agent package not found";
+
+//Warning about source OCS package not found comment
+"Source_pkg_not_found_warn_comment" = "Cannot find source package at: %@\nPlease choose a valid OCS agent installer file";
