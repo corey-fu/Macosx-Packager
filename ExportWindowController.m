@@ -69,6 +69,22 @@
         return;
     }
     
+    //Pre-check: export directory must be writable
+    if (![filemgr isWritableFileAtPath:[exportPath stringValue]]) {
+        [context displayAlert:NSLocalizedString(@"No_write_permission_warn", @"No write permission warning")
+                      comment:[NSString stringWithFormat:NSLocalizedString(@"No_write_permission_warn_comment", @"No write permission warning comment"), [exportPath stringValue]]
+                        style:NSAlertStyleCritical];
+        return;
+    }
+    
+    //Pre-check: source .pkg must exist
+    if (![[configuration ocsPkgFilePath] length] || ![filemgr fileExistsAtPath:[configuration ocsPkgFilePath]]) {
+        [context displayAlert:NSLocalizedString(@"Source_pkg_not_found_warn", @"Source pkg not found warning")
+                      comment:[NSString stringWithFormat:NSLocalizedString(@"Source_pkg_not_found_warn_comment", @"Source pkg not found comment"), [configuration ocsPkgFilePath] ?: @"<not set>"]
+                        style:NSAlertStyleCritical];
+        return;
+    }
+    
     
     NSString *pkgFileName = [NSString stringWithFormat:@"%@.pkg",[exportFileName stringValue]];
     NSString *ocsPkgPath = [NSString stringWithFormat:@"%@/%@",[exportPath stringValue],pkgFileName];
@@ -106,9 +122,15 @@
     }
     
     //We create new package  file
-    if (![filemgr copyItemAtPath:[configuration ocsPkgFilePath] toPath:ocsPkgPath error:nil]) {
-        // if (![filemgr copyPath:[configuration ocsPkgFilePath] toPath:ocsPkgPath handler:nil]) {
-        [context displayAlert:[NSString stringWithFormat: NSLocalizedString(@"Package_copy_error_warn", @"Warning about package copy error"),pkgFileName] comment:NSLocalizedString(@"Package_copy_error_warn_comment",@"Warning about package copy error comment") style:NSAlertStyleCritical];
+    NSError *copyError = nil;
+    if (![filemgr copyItemAtPath:[configuration ocsPkgFilePath] toPath:ocsPkgPath error:&copyError]) {
+        [context displayAlert:[NSString stringWithFormat:NSLocalizedString(@"Package_copy_error_warn", @"Warning about package copy error"), pkgFileName]
+                      comment:[NSString stringWithFormat:@"%@\n%@\nSource: %@\nDestination: %@",
+                               NSLocalizedString(@"Package_copy_error_warn_comment", @"Warning about package copy error comment"),
+                               [copyError localizedDescription] ?: @"Unknown error",
+                               [configuration ocsPkgFilePath],
+                               ocsPkgPath]
+                        style:NSAlertStyleCritical];
         return;
     }
     
@@ -124,16 +146,27 @@
     
     if ([filemgr fileExistsAtPath:preinstallPath]) {
         // change from copyPath (deprecated) to copyItemAtPath
-        if (![filemgr copyItemAtPath:preinstallPath toPath:[NSString stringWithFormat:@"%@/preinstall",ocsPkgResourcesPath] error:nil]) {
-            // if (![filemgr copyPath:preinstallPath toPath:[NSString stringWithFormat:@"%@/preinstall",ocsPkgResourcesPath] handler:nil]) {
-            [context displayAlert:NSLocalizedString(@"Preinstall_copy_error_warn",@"Warning about preinstall copy error") comment:[NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"),pkgFileName] style:NSAlertStyleCritical];
+        NSError *preinstallCopyError = nil;
+        if (![filemgr copyItemAtPath:preinstallPath toPath:[NSString stringWithFormat:@"%@/preinstall",ocsPkgResourcesPath] error:&preinstallCopyError]) {
+            [context displayAlert:NSLocalizedString(@"Preinstall_copy_error_warn",@"Warning about preinstall copy error")
+                          comment:[NSString stringWithFormat:@"%@\n%@\nPath: %@",
+                                   [NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"), pkgFileName],
+                                   [preinstallCopyError localizedDescription] ?: @"Unknown error",
+                                   preinstallPath]
+                            style:NSAlertStyleCritical];
             [self removeFile:ocsPkgPath];
             return;
         }
         
         // change from copyPath (deprecated) to copyItemAtPath
-        if (![filemgr copyItemAtPath:preinstallPath toPath:[NSString stringWithFormat:@"%@/preupgrade",ocsPkgResourcesPath] error:nil]) {
-            [context displayAlert:NSLocalizedString(@"Preupgrade_copy_error_warn",@"Warning about preupgrade copy error") comment:[NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"),pkgFileName] style:NSAlertStyleCritical];
+        NSError *preupgradeCopyError = nil;
+        if (![filemgr copyItemAtPath:preinstallPath toPath:[NSString stringWithFormat:@"%@/preupgrade",ocsPkgResourcesPath] error:&preupgradeCopyError]) {
+            [context displayAlert:NSLocalizedString(@"Preupgrade_copy_error_warn",@"Warning about preupgrade copy error")
+                          comment:[NSString stringWithFormat:@"%@\n%@\nPath: %@",
+                                   [NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"), pkgFileName],
+                                   [preupgradeCopyError localizedDescription] ?: @"Unknown error",
+                                   preinstallPath]
+                            style:NSAlertStyleCritical];
             [self removeFile:ocsPkgPath];
             return;
         }
@@ -203,8 +236,13 @@
     }
     
     
-    if(![ocsAgentCfgContent writeToFile:ocsPkgCfgFilePath atomically: YES encoding:NSUTF8StringEncoding error:NULL]) {
-        [context displayAlert:NSLocalizedString(@"Configuration_file_write_error_warn",@"Warning about ocsinventory-agent.cfg file write error") comment:[NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"),pkgFileName] style:NSAlertStyleCritical];
+    NSError *cfgWriteError = nil;
+    if(![ocsAgentCfgContent writeToFile:ocsPkgCfgFilePath atomically: YES encoding:NSUTF8StringEncoding error:&cfgWriteError]) {
+        [context displayAlert:NSLocalizedString(@"Configuration_file_write_error_warn",@"Warning about ocsinventory-agent.cfg file write error")
+                      comment:[NSString stringWithFormat:@"%@\n%@",
+                               [NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"), pkgFileName],
+                               [cfgWriteError localizedDescription] ?: @"Unknown error"]
+                        style:NSAlertStyleCritical];
         [self removeFile:ocsPkgPath];
         return;
     }
@@ -233,8 +271,13 @@
      @"1;"
      ];
     
-    if (![modulesCfgContent writeToFile:ocsPkgModulesFilePath atomically: YES encoding:NSUTF8StringEncoding error:NULL]) {
-        [context displayAlert:NSLocalizedString(@"Modules_file_write_error_warn",@"Warning about modules.conf file write error") comment:[NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"),pkgFileName] style:NSAlertStyleCritical];
+    NSError *modulesCfgWriteError = nil;
+    if (![modulesCfgContent writeToFile:ocsPkgModulesFilePath atomically: YES encoding:NSUTF8StringEncoding error:&modulesCfgWriteError]) {
+        [context displayAlert:NSLocalizedString(@"Modules_file_write_error_warn",@"Warning about modules.conf file write error")
+                      comment:[NSString stringWithFormat:@"%@\n%@",
+                               [NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"), pkgFileName],
+                               [modulesCfgWriteError localizedDescription] ?: @"Unknown error"]
+                        style:NSAlertStyleCritical];
         [self removeFile:ocsPkgPath];
         return;
     }
@@ -247,11 +290,21 @@
         [protocolName replaceOccurrencesOfString:@"/" withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, [protocolName length])];
         
         serverDir = [NSString stringWithFormat:@"/var/lib/ocsinventory-agent/%@__%@_ocsinventory", protocolName, [configuration server]];
-        [serverDir writeToFile:ocsPkgServerdirFilePath atomically: YES encoding:NSUTF8StringEncoding error:NULL];
+        NSError *serverDirWriteError = nil;
+        [serverDir writeToFile:ocsPkgServerdirFilePath atomically: YES encoding:NSUTF8StringEncoding error:&serverDirWriteError];
+        if (serverDirWriteError) {
+            NSLog(@"Warning: could not write serverdir file at %@: %@", ocsPkgServerdirFilePath, [serverDirWriteError localizedDescription]);
+        }
         
         // change from copyPath (deprecated) to copyItemAtPath
-        if (![filemgr copyItemAtPath:[configuration cacertFilePath] toPath:ocsPkgCacertFilePath error:nil]) {
-            [context displayAlert:NSLocalizedString(@"Cacert_file_copy_error_warn",@"Warning about cacert.pem file copy error") comment:[NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"),pkgFileName] style:NSAlertStyleCritical];
+        NSError *cacertCopyError = nil;
+        if (![filemgr copyItemAtPath:[configuration cacertFilePath] toPath:ocsPkgCacertFilePath error:&cacertCopyError]) {
+            [context displayAlert:NSLocalizedString(@"Cacert_file_copy_error_warn",@"Warning about cacert.pem file copy error")
+                          comment:[NSString stringWithFormat:@"%@\n%@\nSource: %@",
+                                   [NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"), pkgFileName],
+                                   [cacertCopyError localizedDescription] ?: @"Unknown error",
+                                   [configuration cacertFilePath]]
+                            style:NSAlertStyleCritical];
             [self removeFile:ocsPkgPath];
             return;
         }
@@ -308,8 +361,13 @@
      @"</plist>"
      ];
     
-    if (![launchdCfgFile writeToFile:ocsPkgLaunchdFilePath atomically: YES encoding:NSUTF8StringEncoding error:NULL]) {
-        [context displayAlert:NSLocalizedString(@"Launchd_file_write_error_warn",@"Warning about org.ocsng.agent.plit file write error") comment:[NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"),pkgFileName] style:NSAlertStyleCritical];
+    NSError *launchdWriteError = nil;
+    if (![launchdCfgFile writeToFile:ocsPkgLaunchdFilePath atomically: YES encoding:NSUTF8StringEncoding error:&launchdWriteError]) {
+        [context displayAlert:NSLocalizedString(@"Launchd_file_write_error_warn",@"Warning about org.ocsng.agent.plit file write error")
+                      comment:[NSString stringWithFormat:@"%@\n%@",
+                               [NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"), pkgFileName],
+                               [launchdWriteError localizedDescription] ?: @"Unknown error"]
+                        style:NSAlertStyleCritical];
         [self removeFile:ocsPkgPath];
         return;
     }
@@ -366,7 +424,11 @@
     
     if ([filemgr fileExistsAtPath:path]) {
         // change from removeFileAtPath (deprecated) to removeItemAtPAth
-        returnValue = [filemgr removeItemAtPath:path error:nil];
+        NSError *removeError = nil;
+        returnValue = [filemgr removeItemAtPath:path error:&removeError];
+        if (!returnValue && removeError) {
+            NSLog(@"Error removing file at path %@: %@", path, [removeError localizedDescription]);
+        }
     }
     
     return returnValue;

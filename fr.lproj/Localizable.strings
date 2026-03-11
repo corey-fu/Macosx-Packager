@@ -105,3 +105,15 @@
 
 //Warning about invalid export file name comment
 "Invalid_export_file_name_comment" = "Veuillez saisir un nom de fichier valide";
+
+//Warning about no write permission on export directory
+"No_write_permission_warn" = "Pas de permission d'écriture sur le dossier d'export";
+
+//Warning about no write permission on export directory comment
+"No_write_permission_warn_comment" = "Impossible d'écrire dans : %@\nVeuillez choisir un dossier sur lequel vous avez les droits d'écriture";
+
+//Warning about source OCS package not found
+"Source_pkg_not_found_warn" = "Fichier d'installation de l'agent OCS source introuvable";
+
+//Warning about source OCS package not found comment
+"Source_pkg_not_found_warn_comment" = "Impossible de trouver le paquet source à : %@\nVeuillez choisir un fichier d'installation de l'agent OCS valide";
