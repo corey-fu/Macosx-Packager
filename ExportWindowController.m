@@ -147,26 +147,30 @@
     
     if ([filemgr fileExistsAtPath:preinstallPath]) {
         // change from copyPath (deprecated) to copyItemAtPath
+        NSString *preinstallDestPath = [NSString stringWithFormat:@"%@/preinstall",ocsPkgResourcesPath];
         NSError *preinstallCopyError = nil;
-        if (![filemgr copyItemAtPath:preinstallPath toPath:[NSString stringWithFormat:@"%@/preinstall",ocsPkgResourcesPath] error:&preinstallCopyError]) {
+        if (![filemgr copyItemAtPath:preinstallPath toPath:preinstallDestPath error:&preinstallCopyError]) {
             [context displayAlert:NSLocalizedString(@"Preinstall_copy_error_warn",@"Warning about preinstall copy error")
-                          comment:[NSString stringWithFormat:@"%@\n%@\nPath: %@",
-                                   [NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"), pkgFileName],
+                          comment:[NSString stringWithFormat:@"%@\n%@\nSource: %@\nDestination: %@",
+                                   NSLocalizedString(@"Resources_write_permission_warn_comment", @"Warning about resources write permission comment"),
                                    [preinstallCopyError localizedDescription] ?: @"Unknown error",
-                                   preinstallPath]
+                                   preinstallPath,
+                                   preinstallDestPath]
                             style:NSAlertStyleCritical];
             [self removeFile:ocsPkgPath];
             return;
         }
         
         // change from copyPath (deprecated) to copyItemAtPath
+        NSString *preupgradeDestPath = [NSString stringWithFormat:@"%@/preupgrade",ocsPkgResourcesPath];
         NSError *preupgradeCopyError = nil;
-        if (![filemgr copyItemAtPath:preinstallPath toPath:[NSString stringWithFormat:@"%@/preupgrade",ocsPkgResourcesPath] error:&preupgradeCopyError]) {
+        if (![filemgr copyItemAtPath:preinstallPath toPath:preupgradeDestPath error:&preupgradeCopyError]) {
             [context displayAlert:NSLocalizedString(@"Preupgrade_copy_error_warn",@"Warning about preupgrade copy error")
-                          comment:[NSString stringWithFormat:@"%@\n%@\nPath: %@",
-                                   [NSString stringWithFormat:NSLocalizedString(@"Package_write_error_warn_comment", @"Warning about package write error comment"), pkgFileName],
+                          comment:[NSString stringWithFormat:@"%@\n%@\nSource: %@\nDestination: %@",
+                                   NSLocalizedString(@"Resources_write_permission_warn_comment", @"Warning about resources write permission comment"),
                                    [preupgradeCopyError localizedDescription] ?: @"Unknown error",
-                                   preinstallPath]
+                                   preinstallPath,
+                                   preupgradeDestPath]
                             style:NSAlertStyleCritical];
             [self removeFile:ocsPkgPath];
             return;

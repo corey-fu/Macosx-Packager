@@ -73,6 +73,9 @@
 //Warning about preupgrade copy error
 "Preupgrade_copy_error_warn" = "Error while copying preupgrade file !!!";
 
+//Warning about resources write permission comment
+"Resources_write_permission_warn_comment" = "Check if you have enough permissions to write to the package Resources directory";
+
 //Warning about ocsinventory-agent.cfg file write error
 "Configuration_file_write_error_warn" = "Error while creating ocsinventory-agent.cfg file !!!";
 
